@@ -34,3 +34,6 @@ StringInSlice(true, "one", "two", "three")
 ```
 Unique("attribute_name")
 ```
+```
+ConflictsWith("foo", "bar", "car")
+```

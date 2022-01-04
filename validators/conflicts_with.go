@@ -2,49 +2,105 @@ package validators
 
 import (
 	"context"
-	"net"
+	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 const (
-	conflictsWithErr = ""
+	conflictsWithErr         = "There was a conflict detected."
+	conflictsWithDescription = "Ensures that the specificed attributes at the same level are not set (either null or unknown)."
 )
 
-type conflictsWithValidator struct{}
+type conflictsWithValidator struct {
+	conflicts []string
+}
 
+// ConflictsWith ensures that the specificed attributes at the same level are not set (either null or unknown).
 func ConflictsWith(attributes ...string) tfsdk.AttributeValidator {
-	return conflictsWithValidator{}
+	return conflictsWithValidator{
+		conflicts: attributes,
+	}
 }
 
+// Description describes this validator.
 func (v conflictsWithValidator) Description(context.Context) string {
-	return conflictsWithErr
+	return conflictsWithDescription
 }
 
+// MarkdownDescription describes this validator.
 func (v conflictsWithValidator) MarkdownDescription(context.Context) string {
-	return conflictsWithErr
+	return conflictsWithDescription
 }
 
+// Validate performs validation on an attribute.
 func (v conflictsWithValidator) Validate(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
-	var str types.String
+	if len(v.conflicts) == 0 {
+		return
+	}
+
+	this, err := toValue(ctx, req.AttributeConfig)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			conflictsWithErr,
+			"The validator had an internal error: "+err.Error(),
+		)
+		return
+	}
+
+	// We don't need to do any validation if the value isn't "set".
+	if !this.IsFullyKnown() || this.IsNull() {
+		return
+	}
+
+	var parent types.Object
 	{
-		diags := tfsdk.ValueAs(ctx, req.AttributeConfig, &str)
-		resp.Diagnostics.Append(diags...)
-		if diags.HasError() {
+		// I think this is almost always guaranteed to be an Object?
+		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, req.AttributePath.WithoutLastStep(), &parent)...)
+		if resp.Diagnostics.HasError() || parent.Null || parent.Unknown {
 			return
 		}
 	}
 
-	if str.Unknown || str.Null {
-		return
+	conflicts := []string{}
+	for _, conflict := range v.conflicts {
+		// I believe the only way this wouldn't be true
+		// is if they pass in an unknown attribute.
+		attrValue, ok := parent.Attrs[conflict]
+		if !ok {
+			continue
+		}
+
+		data, err := toValue(ctx, attrValue)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				conflictsWithErr,
+				"The validator had an internal error: "+err.Error(),
+			)
+			return
+		}
+
+		// Check if the attribute is "actually" set.
+		if data.IsFullyKnown() && !data.IsNull() {
+			conflicts = append(conflicts, conflict)
+		}
 	}
 
-	if _, _, err := net.ParseCIDR(str.Value); err != nil {
-		resp.Diagnostics.AddAttributeError(
-			req.AttributePath,
-			"Invalid String Content",
-			cidrErr,
+	if len(conflicts) > 0 {
+		resp.Diagnostics.AddError(
+			conflictsWithErr,
+			req.AttributePath.String()+" conficts with "+strings.Join(conflicts, ", ")+".",
 		)
 	}
+}
+
+func toValue(ctx context.Context, in attr.Value) (tftypes.Value, error) {
+	data, err := in.ToTerraformValue(ctx)
+	if err != nil {
+		return tftypes.Value{}, err
+	}
+	return tftypes.NewValue(in.Type(ctx).TerraformType(ctx), data), nil
 }
