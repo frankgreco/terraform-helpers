@@ -40,3 +40,9 @@ ConflictsWith("foo", "bar", "car")
 ```
 NoOverlappingCIDRs()
 ```
+```
+NoOverlap()
+```
+```
+Compare("attribute" validators.ComparatorLessThanEqual)
+```

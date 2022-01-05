@@ -4,10 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 const (
@@ -95,12 +93,4 @@ func (v conflictsWithValidator) Validate(ctx context.Context, req tfsdk.Validate
 			req.AttributePath.String()+" conficts with "+strings.Join(conflicts, ", ")+".",
 		)
 	}
-}
-
-func toValue(ctx context.Context, in attr.Value) (tftypes.Value, error) {
-	data, err := in.ToTerraformValue(ctx)
-	if err != nil {
-		return tftypes.Value{}, err
-	}
-	return tftypes.NewValue(in.Type(ctx).TerraformType(ctx), data), nil
 }

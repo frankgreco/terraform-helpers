@@ -2,10 +2,8 @@ package validators
 
 import (
 	"context"
-	"net"
-	"strings"
 
-	"github.com/frankgreco/terraform-helpers/internal/cidr"
+	"github.com/frankgreco/terraform-helpers/internal/overlap"
 
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -59,7 +57,7 @@ func (v noOverlappingCIDRsValidator) Validate(ctx context.Context, req tfsdk.Val
 		}
 	}
 
-	if err := cidr.Overlaps(encoded); err != nil {
+	if err := overlap.CIDR(encoded); err != nil {
 		resp.Diagnostics.AddError(
 			noOverlappingCIDRsErr,
 			err.Error(),
