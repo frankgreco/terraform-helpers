@@ -22,6 +22,24 @@ func TestOverlaps(t *testing.T) {
 			},
 		},
 		{
+			name: "no mask",
+			cidrs: []string{
+				"192.168.1.0/24",
+				"192.168.2.0/24",
+				"192.168.3.0",
+			},
+		},
+		{
+			name: "no mask overlap",
+			cidrs: []string{
+				"192.168.1.0/24",
+				"192.168.2.0/24",
+				"192.168.3.0",
+				"192.168.3.0/32",
+			},
+			err: "The IPs between 192.168.3.0 and 192.168.3.0 are supplied by more than one range.",
+		},
+		{
 			name: "overlapping happy path",
 			cidrs: []string{
 				"192.168.1.0/24",
@@ -31,17 +49,11 @@ func TestOverlaps(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			cidrs := []*net.IPNet{}
-			for _, cidr := range test.cidrs {
-				_, ipNet, err := net.ParseCIDR(cidr)
-				require.NoError(t, err, test.name)
-				require.NotNil(t, ipNet.IP.To4(), test.name)
-				cidrs = append(cidrs, ipNet)
-			}
-			err := Overlaps(cidrs)
+			err := Overlaps(test.cidrs)
 			if test.err == "" {
 				require.NoError(t, err, test.name)
 			} else {
+				require.NotNil(t, err, test.name)
 				require.Equal(t, test.err, err.Error(), test.name)
 			}
 		})

@@ -59,35 +59,7 @@ func (v noOverlappingCIDRsValidator) Validate(ctx context.Context, req tfsdk.Val
 		}
 	}
 
-	var cidrs []*net.IPNet
-	{
-		for _, cidr := range encoded {
-			// If the cidr contains a '/' anywhere else, It's already malformed.
-			// Making it more malformed won't be an issue.
-			if !strings.Contains(cidr, "/") {
-				cidr = cidr + "/32"
-			}
-
-			_, ipNet, err := net.ParseCIDR(cidr)
-			if err != nil {
-				resp.Diagnostics.AddError(
-					noOverlappingCIDRsErr,
-					"Invalid CIDR: "+err.Error(),
-				)
-				return
-			}
-			if ipNet.IP.To4() == nil {
-				resp.Diagnostics.AddError(
-					noOverlappingCIDRsErr,
-					"Invalid CIDR: not IPv4",
-				)
-				return
-			}
-			cidrs = append(cidrs, ipNet)
-		}
-	}
-
-	if err := cidr.Overlaps(cidrs); err != nil {
+	if err := cidr.Overlaps(encoded); err != nil {
 		resp.Diagnostics.AddError(
 			noOverlappingCIDRsErr,
 			err.Error(),

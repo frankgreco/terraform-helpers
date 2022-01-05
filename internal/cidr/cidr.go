@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"sort"
+	"strings"
 )
 
 type cidrRange struct {
@@ -24,7 +25,31 @@ func newCidrRange(cidr *net.IPNet) cidrRange {
 	return out
 }
 
-func Overlaps(cidrs []*net.IPNet) error {
+func Overlaps(encoded []string) error {
+	var cidrs []*net.IPNet
+	{
+		for _, cidr := range encoded {
+			// If the cidr contains a '/' anywhere else, It's already malformed.
+			// Making it more malformed won't be an issue.
+			if !strings.Contains(cidr, "/") {
+				cidr = cidr + "/32"
+			}
+
+			_, ipNet, err := net.ParseCIDR(cidr)
+			if err != nil {
+				return err
+			}
+			if ipNet.IP.To4() == nil {
+				return fmt.Errorf("Invalid CIDR: %s is not IPv4", ipNet.IP.String())
+			}
+			cidrs = append(cidrs, ipNet)
+		}
+	}
+
+	return overlaps(cidrs)
+}
+
+func overlaps(cidrs []*net.IPNet) error {
 	if len(cidrs) < 2 {
 		return nil
 	}
