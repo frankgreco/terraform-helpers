@@ -37,3 +37,6 @@ Unique("attribute_name")
 ```
 ConflictsWith("foo", "bar", "car")
 ```
+```
+NoOverlappingCIDRs()
+```
