@@ -53,3 +53,7 @@ NoOverlap()
 // Does the comparator between this and another attribute at the same level pass?
 Compare("attribute" validators.ComparatorLessThanEqual)
 ```
+```
+// Does the string attribute have a length of at least x?
+MinLength(1)
+```
