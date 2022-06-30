@@ -35,8 +35,13 @@ NoWhitespace()
 ```
 
 ```sh
-// Is the attribute is a certain set of values?
+// Is the attribute in a certain set of values?
 StringInSlice(true, "one", "two", "three")
+```
+
+```sh
+// Is the attribute in a certain set of number values?
+FloatInSlice(1, 4, 6)
 ```
 
 ```sh
@@ -66,6 +71,16 @@ Compare("attribute" validators.ComparatorLessThanEqual)
 ```
 
 ```sh
+// Does the string attribute match the regex?
+Match(regexp.MustCompile("^[0-9a-fA-F]{6}$"))
+```
+
+```sh
 // Does the string attribute have a length of at least x?
 MinLength(1)
+```
+
+```sh
+// Does the string attribute have a length no more than x?
+MaxLength(5)
 ```

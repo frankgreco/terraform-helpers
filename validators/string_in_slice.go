@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	stringInSliceValidatorErr = "string must be one of [%s]"
+	stringInSliceErr         = "string must be one of [%s]"
+	stringInSliceDescription = "Ensure that the attribute value is one of the provided values."
 )
 
 type stringInSliceValidator struct {
@@ -26,11 +27,11 @@ func StringInSlice(caseSensitive bool, values ...string) tfsdk.AttributeValidato
 }
 
 func (v stringInSliceValidator) Description(context.Context) string {
-	return fmt.Sprintf(stringInSliceValidatorErr, strings.Join(v.values, ", "))
+	return stringInSliceDescription
 }
 
 func (v stringInSliceValidator) MarkdownDescription(context.Context) string {
-	return fmt.Sprintf(stringInSliceValidatorErr, strings.Join(v.values, ", "))
+	return stringInSliceDescription
 }
 
 func (v stringInSliceValidator) Validate(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
@@ -56,6 +57,6 @@ func (v stringInSliceValidator) Validate(ctx context.Context, req tfsdk.Validate
 	resp.Diagnostics.AddAttributeError(
 		req.AttributePath,
 		"Invalid String",
-		fmt.Sprintf(stringInSliceValidatorErr, strings.Join(v.values, ", ")),
+		fmt.Sprintf(stringInSliceErr, strings.Join(v.values, ", ")),
 	)
 }
