@@ -1,0 +1,19 @@
+---
+
+name: " default"
+
+on:
+  push:
+    branches:
+    - '**'
+
+jobs:
+  # ensure all the basic pre-commit checks pass
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: pre-commit
+      uses: pre-commit/action@v2.0.3
