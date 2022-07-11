@@ -93,7 +93,7 @@ func (u uniqueValidator) Validate(ctx context.Context, req tfsdk.ValidateAttribu
 			)
 			return
 		}
-		log[tmp] = true
 
+		log[tmp] = true
 	}
 }

@@ -9,28 +9,29 @@ import (
 )
 
 const (
-	lengthValidatorErr = "String must be at least %d characters long."
+	minLengthErr         = "String must be at least %d characters long."
+	minLengthDescription = "Ensure that the attribute value has a minimum length."
 )
 
-type lengthValidator struct {
+type minLengthValidator struct {
 	length int
 }
 
 func MinLength(length int) tfsdk.AttributeValidator {
-	return lengthValidator{
+	return minLengthValidator{
 		length: length,
 	}
 }
 
-func (v lengthValidator) Description(context.Context) string {
-	return fmt.Sprintf(lengthValidatorErr, v.length)
+func (v minLengthValidator) Description(context.Context) string {
+	return minLengthDescription
 }
 
-func (v lengthValidator) MarkdownDescription(context.Context) string {
-	return fmt.Sprintf(lengthValidatorErr, v.length)
+func (v minLengthValidator) MarkdownDescription(context.Context) string {
+	return minLengthDescription
 }
 
-func (v lengthValidator) Validate(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
+func (v minLengthValidator) Validate(ctx context.Context, req tfsdk.ValidateAttributeRequest, resp *tfsdk.ValidateAttributeResponse) {
 	var str types.String
 	{
 		diags := tfsdk.ValueAs(ctx, req.AttributeConfig, &str)
@@ -48,7 +49,7 @@ func (v lengthValidator) Validate(ctx context.Context, req tfsdk.ValidateAttribu
 		resp.Diagnostics.AddAttributeError(
 			req.AttributePath,
 			"Invalid String Length",
-			fmt.Sprintf(lengthValidatorErr, v.length),
+			fmt.Sprintf(minLengthErr, v.length),
 		)
 	}
 }
