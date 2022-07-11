@@ -6,7 +6,6 @@ on:
   push:
     branches:
     - '**'
-  pull_request: {}
 
 jobs:
   # ensure all the basic pre-commit checks pass
@@ -19,8 +18,24 @@ jobs:
     - name: pre-commit
       uses: pre-commit/action@v2.0.3
 
+  # test the code
+  test:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: init-go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: test
+      run: make test
+
   tag:
-    needs: [check]
+    needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:

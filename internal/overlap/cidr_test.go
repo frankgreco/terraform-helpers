@@ -94,13 +94,13 @@ func TestNewCidrRange(t *testing.T) {
 			name:   "/32",
 			cidr:   "192.168.2.42/32",
 			first:  "192.168.2.42",
-			second: "192.255.2.42",
+			second: "192.168.2.42",
 		},
 		{
 			name:   "non octet boundary /17",
 			cidr:   "192.168.86.42/17",
 			first:  "192.168.0.0",
-			second: "192.255.127.255",
+			second: "192.168.127.255",
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
